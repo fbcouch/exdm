@@ -11,13 +11,43 @@ otherwise prints 'no' and exits with a non-zero exit code.
 "
 
   def run([stage]) do
-    {:ok, remote_version} = Exdm.Remote.get_version(String.to_atom(stage))
-    handle_can_transition_from(Exdm.Local.can_transition_from(remote_version))
+    if can_run?(String.to_atom(stage)) do
+      IO.puts "yes"
+    else
+      IO.puts "no"
+    end
+
+
+  end
+
+  defp can_run?(stage) do
+    has_directory?(stage) && can_transition?(stage)
+  end
+
+  defp has_directory?(stage) do
+    case Exdm.Remote.has_directory?(stage) do
+      {:ok, _} ->
+        true
+      {:error, _} ->
+        false
+      {:error, _, _} ->
+        false
+    end
+  end
+
+  defp can_transition?(stage) do
+    case Exdm.Remote.get_version(stage) do
+      {:ok, remote_version} ->
+        handle_can_transition_from(Exdm.Local.can_transition_from(remote_version))
+      {:error, reason} ->
+        false
+    end
   end
 
   defp handle_can_transition_from({:ok}) do
-    IO.puts "yes"
+    true
   end
+
   defp handle_can_transition_from({:error, reason}) do
     IO.puts "no"
     raise reason

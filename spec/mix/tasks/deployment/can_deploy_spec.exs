@@ -8,6 +8,7 @@ defmodule Mix.Tasks.Deployment.CanDeploySpec do
   context "when the relup file transitions from the remote version to the local version" do
     before do
       :meck.expect(Exdm.Remote, :get_version, fn _ -> {:ok, remote_version} end)
+      :meck.expect(Exdm.Remote, :has_directory?, fn _ -> {:ok, ""} end)
       :meck.expect(Exdm.Local, :can_transition_from, fn _ -> {:ok} end)
     end
 
@@ -30,6 +31,7 @@ defmodule Mix.Tasks.Deployment.CanDeploySpec do
 
     before do
       :meck.expect(Exdm.Remote, :get_version, fn _ -> {:ok, remote_version} end)
+      :meck.expect(Exdm.Remote, :has_directory?, fn _ -> {:ok, ""} end)
       :meck.expect(Exdm.Local, :can_transition_from, fn _ -> {:error, some_reason} end)
     end
 

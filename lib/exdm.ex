@@ -11,6 +11,13 @@ defmodule Exdm do
     Exdm.Connection.execute(stage, [boot_script_path, "upgrade", version])
   end
 
+  def deploy_fresh(stage) do
+    config = Exdm.Config.load!(stage)
+    Exdm.Connection.upload(stage, release_tarball, remote_release_path!(config))
+    boot_script_path = Exdm.Remote.boot_script_path!(config)
+    Exdm.Connection.execute(stage, [boot_script_path, "start"])
+  end
+
   def application_name do
     Mix.Project.config[:app] |> Atom.to_string
   end

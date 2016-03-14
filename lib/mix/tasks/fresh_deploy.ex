@@ -1,11 +1,11 @@
-defmodule Mix.Tasks.Deployment.Deploy do
+defmodule Mix.Tasks.Deployment.FreshDeploy do
   use Mix.Task
   import Logger
 
   @moduledoc """
   Deploys to a stage.
 
-      mix deployment.deploy production
+      mix deployment.fresh_deploy production
 
   The argument is the name of a stage.
 
@@ -20,19 +20,13 @@ defmodule Mix.Tasks.Deployment.Deploy do
 
   def run([stage]) do
     stage = String.to_atom(stage)
-    case Exdm.Remote.get_version(stage) do
-      {:ok, remote_version} ->
-        handle_can_transition_from(stage, Exdm.Local.can_transition_from(remote_version))
+    case Exdm.Remote.has_directory?(stage) do
+      {:ok, _} ->
+        Exdm.deploy_fresh(stage)
       {:error, reason} ->
         Logger.error reason
+      {:error, reason, _} ->
+        Logger.error reason
     end
-  end
-
-  defp handle_can_transition_from(stage, {:ok}) do
-    Exdm.deploy(stage)
-    {:ok}
-  end
-  defp handle_can_transition_from(_stage, {:error, reason}) do
-    {:error, reason}
   end
 end

@@ -1,11 +1,22 @@
 defmodule Exdm.Remote do
   def get_version(stage) do
-    {:ok, _erlang_version, app_version} = read_start_erl(stage)
-    {:ok, app_version}
+    case read_start_erl(stage) do
+      {:ok, _erlang_version, app_version} ->
+        {:ok, app_version}
+      {:error, reason} ->
+        {:error, reason}
+    end
   end
 
   def is_running?(stage) do
     handle_ping(execute_boot_script_command(stage, ["ping"]))
+  end
+
+  def has_directory?(stage) do
+    config = Exdm.Config.load!(stage)
+    path = releases_path!(config)
+    params = ["[ -d #{path} ]"]
+    Exdm.Connection.execute(stage, params)
   end
 
   def stop(stage) do
@@ -56,6 +67,9 @@ defmodule Exdm.Remote do
     parse_start_erl(content)
   end
   defp handle_read_start_erl({:error, reason}) do
+    {:error, reason}
+  end
+  defp handle_read_start_erl({:error, reason, _}) do
     {:error, reason}
   end
 
