@@ -22,9 +22,13 @@ defmodule Mix.Tasks.Deployment.Deploy do
     stage = String.to_atom(stage)
     case Exdm.Remote.get_version(stage) do
       {:ok, remote_version} ->
+        {:ok, local_version} = Exdm.Local.get_version
+        Logger.info "Upgrading #{remote_version} -> #{local_version}"
         handle_can_transition_from(stage, Exdm.Local.can_transition_from(remote_version))
       {:error, reason} ->
-        Logger.error reason
+        Logger.info "Cannot upgrade, trying fresh deploy..."
+        Exdm.deploy_fresh(stage)
+        {:ok}
     end
   end
 
@@ -32,6 +36,7 @@ defmodule Mix.Tasks.Deployment.Deploy do
     Exdm.deploy(stage)
     {:ok}
   end
+
   defp handle_can_transition_from(_stage, {:error, reason}) do
     {:error, reason}
   end

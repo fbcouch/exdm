@@ -15,7 +15,11 @@ defmodule Exdm do
   """
   def deploy_fresh(stage) do
     config = Exdm.Config.load!(stage)
+    Exdm.Connection.execute(stage, ["mkdir", "-p", remote_release_path!(config)])
     Exdm.Connection.upload(stage, release_tarball, remote_release_path!(config))
+    remote_tarball = Path.join([remote_release_path!(config), "#{application_name}.tar.gz"])
+    application_path = Exdm.Config.application_path!(config)
+    Exdm.Connection.execute(stage, ["tar", "-xzvf", remote_tarball, "-C", application_path])
     boot_script_path = Exdm.Remote.boot_script_path!(config)
     Exdm.Connection.execute(stage, [boot_script_path, "start"])
   end
