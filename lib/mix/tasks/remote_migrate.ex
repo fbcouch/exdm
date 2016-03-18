@@ -1,5 +1,13 @@
-defmodule Mix.Tasks.RemoteMigrate do
+defmodule Mix.Tasks.Deployment.RemoteMigrate do
   use Mix.Task
+
+  @moduledoc """
+  Runs migrations for a stage.
+
+      mix deployment.remote_migrate production
+
+  The argument is the name of a stage.
+  """
 
   @shortdoc "Runs migrations on a given stage"
 
