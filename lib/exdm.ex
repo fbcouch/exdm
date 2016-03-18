@@ -3,7 +3,6 @@ defmodule Exdm do
   @doc """
   Deploys a local release, build with exrm, to the indicated stage.
   """
-
   def deploy(stage) do
     config = Exdm.Config.load!(stage)
     Exdm.Connection.upload(stage, release_tarball, remote_release_path!(config))
@@ -11,11 +10,25 @@ defmodule Exdm do
     Exdm.Connection.execute(stage, [boot_script_path, "upgrade", version])
   end
 
+  @doc """
+  Deploys a local release, build with exrm, to the indicated stage (first time).
+  """
   def deploy_fresh(stage) do
     config = Exdm.Config.load!(stage)
     Exdm.Connection.upload(stage, release_tarball, remote_release_path!(config))
     boot_script_path = Exdm.Remote.boot_script_path!(config)
     Exdm.Connection.execute(stage, [boot_script_path, "start"])
+  end
+
+  @doc """
+  Runs the migrations for the MyApplication.Repo
+  """
+  def run_migrations do
+    migration_path = Application.app_dir(String.to_atom(application_name))
+      |> Path.join("priv")
+      |> Path.join("repo")
+      |> Path.join("migrations")
+    Ecto.Migrator.run Module.concat([Mix.Utils.camelize(application_name), "Repo"]), migration_path, :up, all: true
   end
 
   def application_name do
